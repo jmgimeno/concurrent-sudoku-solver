@@ -365,7 +365,7 @@ object ZIOSolverTest extends ZIOSpecDefault {
     Coord(8, 8) -> SudokuValue.Given(2)
   )
 
-  val testCases: Seq[Map[Coord, SudokuValue]] = Seq(testCase1) //, testCase2, testCase3)
+  val testCases: Seq[Map[Coord, SudokuValue]] = Seq(testCase1)//, testCase2)//, testCase3)
 
   val solvers: List[Solver[Task]] =
     List(
@@ -389,6 +389,6 @@ object ZIOSolverTest extends ZIOSpecDefault {
                 assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(expected))
               }
           }
-      }
+      } : _*
     )
 }
