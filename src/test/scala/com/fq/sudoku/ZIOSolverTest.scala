@@ -1,11 +1,12 @@
-package com.fq.sudoku.zio
+package com.fq.sudoku
 
 import zio._
 import zio.test._
-import com.fq.sudoku.zio.ZIOSolver.{Candidate, Coord, Value}
-import zio.test.Assertion.equalTo
+import zio.test.Assertion._
 
-object SolverTest extends ZIOSpecDefault {
+import com.fq.sudoku.Solver.{Candidate, Coord, Value}
+
+object ZIOSolverTest extends ZIOSpecDefault {
 
   sealed trait SudokuValue {
     def value: Int
@@ -19,7 +20,7 @@ object SolverTest extends ZIOSpecDefault {
 
   def toSudokuValue(value: Value): (Coord, SudokuValue) =
     value match {
-      case Value.Given(coord, x)    => coord -> SudokuValue.Given(x)
+      case Value.Given(coord, x) => coord -> SudokuValue.Given(x)
       case single: Candidate.Single => single.coord -> SudokuValue.Missing(single.value)
     }
 
@@ -364,18 +365,18 @@ object SolverTest extends ZIOSpecDefault {
     Coord(8, 8) -> SudokuValue.Given(2)
   )
 
-  val testCases: Seq[Map[Coord, SudokuValue]] = Seq(testCase1, testCase2, testCase3)
+  val testCases: Seq[Map[Coord, SudokuValue]] = Seq(testCase1) //, testCase2, testCase3)
 
-  val solvers: List[ZIOSolver] =
+  val solvers: List[Solver[Task]] =
     List(
-      ZIODeferredRefRaceSolver
+      ZIOPromiseRefRaceSolver
     )
 
-  def spec =
+  def spec: Spec[Any, Throwable] =
     suite("Sudoku tests")(
-      solvers.foreach { solver =>
+      solvers.flatMap { solver =>
         testCases.zipWithIndex
-          .foreach {
+          .map {
             case (expected, idx) =>
               test(
                 s"${solver.getClass.getSimpleName.dropRight(1)} should solve sudoku puzzle #$idx"
@@ -384,7 +385,7 @@ object SolverTest extends ZIOSpecDefault {
                   case (k, SudokuValue.Given(v)) => Value.Given(k, v)
                 }.toList
 
-                val result: Task[List[ZIOSolver.Value]] = solver.solve(givens)
+                val result: Task[List[Solver.Value]] = solver.solve(givens)
                 assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(expected))
               }
           }

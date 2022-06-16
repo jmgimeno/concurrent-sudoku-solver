@@ -1,9 +1,11 @@
-package com.fq.sudoku.zio
+package com.fq.sudoku
 
 import zio._
-import com.fq.sudoku.zio.ZIOSolver._
 
-object ZIODeferredRefRaceSolver extends ZIOSolver {
+
+import com.fq.sudoku.Solver._
+
+object ZIOPromiseRefRaceSolver extends Solver[Task] {
   def solve(givens: List[Value.Given]): Task[List[Value]] =
     for {
       allCells <- ZIO.foreach(Coord.allCoords)(Cell.make)
@@ -41,8 +43,8 @@ object ZIODeferredRefRaceSolver extends ZIOSolver {
             singleCandidate <- raceMany(listOfSingleCandidateOrNever)
           } yield singleCandidate
 
-        private def raceMany[T](listOfIOs: List[Task[T]]): Task[T] =
-          listOfIOs.reduce((a, b) => a.raceEither(b).map(_.merge))
+        private def raceMany[T](tasks: List[Task[T]]): Task[T] =
+          tasks.reduce((a, b) => a.raceEither(b).map(_.merge))
 
         private def refineToSingleCandidateOrNever(
             refCandidate: Ref[Candidate],
