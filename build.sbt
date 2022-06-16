@@ -15,6 +15,10 @@ lazy val root = (project in file(".")).settings(
     // better monadic for compiler plugin as suggested by documentation
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     "co.fs2" %% "fs2-core" % "3.2.5",
-    "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
+    "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
+    // ZIO
+    "dev.zio" %% "zio" % "2.0.0-RC6",
+    "dev.zio" %% "zio-test" % "2.0.0-RC6" % Test,
+    "dev.zio" %% "zio-test-sbt" % "2.0.0-RC6" % Test
   )
 )
