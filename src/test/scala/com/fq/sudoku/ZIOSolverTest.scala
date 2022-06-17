@@ -20,7 +20,7 @@ object ZIOSolverTest extends ZIOSpecDefault {
 
   def toSudokuValue(value: Value): (Coord, SudokuValue) =
     value match {
-      case Value.Given(coord, x) => coord -> SudokuValue.Given(x)
+      case Value.Given(coord, x)    => coord -> SudokuValue.Given(x)
       case single: Candidate.Single => single.coord -> SudokuValue.Missing(single.value)
     }
 
@@ -365,30 +365,34 @@ object ZIOSolverTest extends ZIOSpecDefault {
     Coord(8, 8) -> SudokuValue.Given(2)
   )
 
-  val testCases: Seq[Map[Coord, SudokuValue]] = Seq(testCase1)//, testCase2)//, testCase3)
+  val testCases: Seq[Map[Coord, SudokuValue]] = Seq(testCase1) //, testCase2)//, testCase3)
 
   val solvers: List[Solver[Task]] =
     List(
       ZIOPromiseRefRaceSolver
     )
 
-  def spec: Spec[Any, Throwable] =
-    suite("Sudoku tests")(
-      solvers.flatMap { solver =>
-        testCases.zipWithIndex
-          .map {
-            case (expected, idx) =>
-              test(
-                s"${solver.getClass.getSimpleName.dropRight(1)} should solve sudoku puzzle #$idx"
-              ) {
-                val givens: List[Value.Given] = expected.collect {
-                  case (k, SudokuValue.Given(v)) => Value.Given(k, v)
-                }.toList
+  def givens(expected: Map[Coord, SudokuValue]): List[Value.Given] =
+    expected.collect {
+      case (k, SudokuValue.Given(v)) => Value.Given(k, v)
+    }.toList
 
-                val result: Task[List[Solver.Value]] = solver.solve(givens)
-                assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(expected))
-              }
-          }
-      } : _*
+  def spec: Spec[Any, Throwable] =
+    suite("ZIOPromiseRefRaceSolver")(
+      test("testCase1") {
+        val givens = ZIOSolverTest.givens(testCase1)
+        val result = ZIOPromiseRefRaceSolver.solve(givens)
+        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase1))
+      },
+//      test("testCase2") {
+//        val givens = ZIOSolverTest.givens(testCase2)
+//        val result = ZIOPromiseRefRaceSolver.solve(givens)
+//        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase2))
+//      },
+//      test("testCase3") {
+//        val givens = ZIOSolverTest.givens(testCase3)
+//        val result = ZIOPromiseRefRaceSolver.solve(givens)
+//        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase3))
+//      }
     )
 }
