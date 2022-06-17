@@ -384,15 +384,15 @@ object ZIOSolverTest extends ZIOSpecDefault {
         val result = ZIOPromiseRefRaceSolver.solve(givens)
         assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase1))
       },
-//      test("testCase2") {
-//        val givens = ZIOSolverTest.givens(testCase2)
-//        val result = ZIOPromiseRefRaceSolver.solve(givens)
-//        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase2))
-//      },
-//      test("testCase3") {
-//        val givens = ZIOSolverTest.givens(testCase3)
-//        val result = ZIOPromiseRefRaceSolver.solve(givens)
-//        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase3))
-//      }
+      test("testCase2") {
+        val givens = ZIOSolverTest.givens(testCase2)
+        val result = ZIOPromiseRefRaceSolver.solve(givens)
+        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase2))
+      },
+      test("testCase3") {
+        val givens = ZIOSolverTest.givens(testCase3)
+        val result = ZIOPromiseRefRaceSolver.solve(givens)
+        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase3))
+      }
     )
 }

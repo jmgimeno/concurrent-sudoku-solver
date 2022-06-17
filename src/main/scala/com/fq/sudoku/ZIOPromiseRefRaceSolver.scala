@@ -10,7 +10,7 @@ object ZIOPromiseRefRaceSolver extends Solver[Task] {
     for {
       allCells <- ZIO.foreach(Coord.allCoords)(Cell.make)
       givensMap = givens.map(g => g.coord -> g).toMap
-      values <- ZIO.foreachPar(allCells)(_.solve(givensMap, allCells))
+      values <- ZIO.foreachPar(allCells)(_.solve(givensMap, allCells)).withParallelismUnbounded
     } yield values
 
   trait Cell {
