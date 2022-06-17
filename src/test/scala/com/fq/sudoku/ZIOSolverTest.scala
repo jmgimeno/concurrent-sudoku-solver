@@ -365,34 +365,32 @@ object ZIOSolverTest extends ZIOSpecDefault {
     Coord(8, 8) -> SudokuValue.Given(2)
   )
 
-  val testCases: Seq[Map[Coord, SudokuValue]] = Seq(testCase1) //, testCase2)//, testCase3)
+  val testCases: Seq[Map[Coord, SudokuValue]] = Seq(testCase1, testCase2, testCase3)
 
   val solvers: List[Solver[Task]] =
     List(
       ZIOPromiseRefRaceSolver
     )
 
-  def givens(expected: Map[Coord, SudokuValue]): List[Value.Given] =
-    expected.collect {
-      case (k, SudokuValue.Given(v)) => Value.Given(k, v)
-    }.toList
-
   def spec: Spec[Any, Throwable] =
-    suite("ZIOPromiseRefRaceSolver")(
-      test("testCase1") {
-        val givens = ZIOSolverTest.givens(testCase1)
-        val result = ZIOPromiseRefRaceSolver.solve(givens)
-        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase1))
-      },
-      test("testCase2") {
-        val givens = ZIOSolverTest.givens(testCase2)
-        val result = ZIOPromiseRefRaceSolver.solve(givens)
-        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase2))
-      },
-      test("testCase3") {
-        val givens = ZIOSolverTest.givens(testCase3)
-        val result = ZIOPromiseRefRaceSolver.solve(givens)
-        assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(testCase3))
+    suite("ZIO Sudoku tests")(
+      solvers.map { solver =>
+        suite(s"${solver.getClass.getSimpleName.dropRight(1)}")(
+          testCases.zipWithIndex
+            .map {
+              case (expected, idx) =>
+                test(
+                  s"should solve sudoku puzzle #$idx"
+                ) {
+                  val givens: List[Value.Given] = expected.collect {
+                    case (k, SudokuValue.Given(v)) => Value.Given(k, v)
+                  }.toList
+
+                  val result: Task[List[Solver.Value]] = solver.solve(givens)
+                  assertZIO(result.map(_.map(toSudokuValue).toMap))(equalTo(expected))
+                }
+            }
+        )
       }
     )
 }
