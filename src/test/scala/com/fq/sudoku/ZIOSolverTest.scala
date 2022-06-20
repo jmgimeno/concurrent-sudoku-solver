@@ -369,7 +369,8 @@ object ZIOSolverTest extends ZIOSpecDefault {
 
   val solvers: List[Solver[Task]] =
     List(
-      ZIOPromiseRefRaceSolver
+      ZIOPromiseRefRaceSolver,
+      ZIOQueueSolver
     )
 
   def spec: Spec[Any, Throwable] =
